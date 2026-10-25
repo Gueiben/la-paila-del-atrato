@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>La Paila del Atrato - Roguelike de Sinergias del Choco Fluvial</title>
+  <style>
+    :root {
+      --bg-deep: #121b18;
+      --bg-river: #1a2a24;
+      --bg-panel: #22352e;
+      --bg-card: #2c443b;
+      --bg-card-selected: #3b5c4f;
+      --gold-chonta: #f59e0b;
+      --red-chonta: #ef4444;
+      --green-popocho: #84cc16;
+      --brown-borojo: #b45309;
+      --cyan-viche: #06b6d4;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border-wood: #4b6b5c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body {
+      background: radial-gradient(circle at top, #1f352d 0%, #0f1715 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 16px;
+    }
+    .app-container {
+      max-width: 1220px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    header {
+      background: var(--bg-panel);
+      border: 2px solid var(--border-wood);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .title-block h1 {
+      font-size: 1.45rem;
+      color: var(--gold-chonta);
+      letter-spacing: 0.5px;
+    }
+    .title-block p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      background: #2e473d;
+      color: var(--text-main);
+      border: 1px solid var(--border-wood);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.88rem;
+      transition: transform 0.1s, background 0.15s;
+    }
+    .btn:hover:not(:disabled) { background: #3c5d50; transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary {
+      background: var(--gold-chonta);
+      color: #111827;
+      border-color: #fbbf24;
+    }
+    .btn-primary:hover:not(:disabled) { background: #fbbf24; }
+    .btn-danger {
+      background: #dc2626;
+      color: #fff;
+      border-color: #f87171;
+    }
+    .btn-accent {
+      background: #0891b2;
+      color: #fff;
+      border-color: #22d3ee;
+    }
+    .top-hud {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .hud-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-wood);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+    .hud-label { font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; }
+    .hud-value { font-size: 1.3rem; font-weight: 700; margin-top: 4px; }
+    .hud-sub { font-size: 0.82rem; color: #d1fae5; margin-top: 4px; }
+    .formula-banner {
+      background: #14221d;
+      border: 2px solid var(--gold-chonta);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .equation-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .chip-box {
+      background: #1d4ed8;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 1.25rem;
+    }
+    .mult-box {
+      background: #b91c1c;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 1.25rem;
+    }
+    .total-box {
+      background: #047857;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 1.35rem;
+      border: 1px solid #34d399;
+    }
+    .candela-meter-wrap {
+      flex: 1;
+      min-width: 240px;
+    }
+    .meter-bar-bg {
+      width: 100%;
+      height: 14px;
+      background: #0f1715;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--border-wood);
+      margin-top: 4px;
+    }
+    .meter-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f59e0b, #ef4444);
+      transition: width 0.25s;
+    }
+    .section-box {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-wood);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .section-title { font-size: 1rem; font-weight: 700; color: #fde68a; }
+    .relics-row, .paila-row, .hand-grid {
+      display: grid;
+      gap: 10px;
+    }
+    .relics-row { grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); }
+    .paila-row { grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); }
+    .hand-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .card {
+      background: var(--bg-card);
+      border: 2px solid var(--border-wood);
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+      transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+    }
+    .card.selected {
+      background: var(--bg-card-selected);
+      border-color: var(--gold-chonta);
+      box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.35);
+    }
+    .card.active-step {
+      border-color: #34d399;
+      transform: scale(1.03);
+      box-shadow: 0 0 14px rgba(52, 211, 153, 0.6);
+    }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 6px;
+    }
+    .card-name { font-weight: 700; font-size: 0.95rem; color: #fff; }
+    .card-family {
+      font-size: 0.72rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: #14221d;
+      color: #a7f3d0;
+      border: 1px solid var(--border-wood);
+    }
+    .card-desc { font-size: 0.8rem; color: #d1d5db; line-height: 1.35; }
+    .card-stats {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+    .stat-pill {
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: #1f2937;
+    }
+    .stat-sub { color: #93c5fd; }
+    .stat-mult { color: #fca5a5; }
+    .stat-heat { color: #fcd34d; }
+    .card-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .btn-sm {
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      border-radius: 6px;
+    }
+    .log-list {
+      max-height: 210px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: #121d19;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border-wood);
+    }
+    .log-item {
+      font-size: 0.83rem;
+      padding: 5px 8px;
+      border-radius: 6px;
+      background: #1c2d27;
+      border-left: 3px solid var(--gold-chonta);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 0.86rem;
+    }
+    th, td {
+      border: 1px solid var(--border-wood);
+      padding: 8px 10px;
+      text-align: left;
+    }
+    th { background: #16241f; color: #fde68a; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <div class="title-block">
+        <h1>LA PAILA DEL ATRATO - Roguelike Fluvial Chocoano</h1>
+        <p>Rios Atrato y San Juan (Negua - Boraudo - Malecon de Quibdo) | Motor de Sinergias: Chontaduro, Popocho, Borojo y Botellas Curadas</p>
+      </div>
+      <div class="nav-tabs">
+        <button class="btn btn-primary" id="tabPlayBtn" onclick="switchTab('play')">Mesa de Juego (Paila)</button>
+        <button class="btn" id="tabShopBtn" onclick="switchTab('shop')">Champa-Tienda del Rio</button>
+        <button class="btn" id="tabSpecBtn" onclick="switchTab('spec')">Tabla de Sinergias y Reglas</button>
+        <button class="btn" id="audioToggleBtn" onclick="toggleAudio()">Audio Chirimia: ON</button>
+        <button class="btn btn-danger" onclick="resetRun()">Nueva Run en Champa</button>
+      </div>
+    </header>
+
+    <div class="top-hud">
+      <div class="hud-card">
+        <div class="hud-label">Posta Fluvial Actual</div>
+        <div class="hud-value" id="hudPostaName">1. Embarcadero de Negua</div>
+        <div class="hud-sub" id="hudPostaRule">Clima: Brisa mansa del rio (Sin penalizacion)</div>
+      </div>
+      <div class="hud-card">
+        <div class="hud-label">Puntaje de Sabrosura vs Meta</div>
+        <div class="hud-value" id="hudScoreProgress">0 / 450 pts</div>
+        <div class="hud-sub" id="hudHandsLeft">Pailas por servir: 4 | Fogones/Descartes: 3</div>
+      </div>
+      <div class="hud-card">
+        <div class="hud-label">Alacena y Patacones</div>
+        <div class="hud-value" id="hudResources">Patacones: $12 | Sal: 3 | Miel: 2</div>
+        <div class="hud-sub" id="hudPermanentBonus">Bono Permanente Chontaduro: +0 Sustancia</div>
+      </div>
+    </div>
+
+    <div class="formula-banner">
+      <div class="equation-box">
+        <span style="font-weight:700; color:#fde68a;">PAILA EN VIVO:</span>
+        <div class="chip-box" id="liveChips">0 Sustancia</div>
+        <span style="font-size:1.3rem; font-weight:800;">x</span>
+        <div class="mult-box" id="liveMult">1.0 Candela</div>
+        <span style="font-size:1.3rem; font-weight:800;">=</span>
+        <div class="total-box" id="liveTotal">0 Pts</div>
+      </div>
+      <div class="candela-meter-wrap">
+        <div style="display:flex; justify-content:space-between; font-size:0.8rem;">
+          <span>Medidor de Candela de la Paila (Riesgo Viche/Arrechon)</span>
+          <span id="candelaPctText">0% / 100%</span>
+        </div>
+        <div class="meter-bar-bg">
+          <div class="meter-bar-fill" id="candelaBar" style="width:0%;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB PLAY -->
+    <div id="viewPlay" style="display:flex; flex-direction:column; gap:14px;">
+      <div class="section-box">
+        <div class="section-header">
+          <span class="section-title">Estante de Sabedora y Chirimia (Reliquias Activas - Max 5)</span>
+          <span style="font-size:0.8rem; color:var(--text-muted);">Se disparan al cerrar la Paila de izquierda a derecha</span>
+        </div>
+        <div class="relics-row" id="relicsContainer"></div>
+      </div>
+
+      <div class="section-box">
+        <div class="section-header">
+          <span class="section-title" id="pailaTitle">La Paila de Cobre (0 / 5 Ingredientes en Olla)</span>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn btn-primary" id="btnServe" onclick="servePaila()">¡SERVIR PAILA! (Calcular)</button>
+            <button class="btn btn-accent" id="btnFogon" onclick="fogonDiscard()">Dejar al Fogon / Descartar Seleccionados (Madura Popochos)</button>
+            <button class="btn" onclick="loadWinningComboDemo()">Cargar Combo Demo Rompe-Paila</button>
+          </div>
+        </div>
+        <div class="paila-row" id="pailaContainer"></div>
+      </div>
+
+      <div class="section-box">
+        <div class="section-header">
+          <span class="section-title">Canasto de la Champa (Mano de 8 Ingredientes - Haz click para echar a la Paila o aderezar con Sal/Miel)</span>
+        </div>
+        <div class="hand-grid" id="handContainer"></div>
+      </div>
+
+      <div class="section-box">
+        <div class="section-header">
+          <span class="section-title">Desglose Paso a Paso de la Paila (Cascada de Chirimia)</span>
+          <button class="btn btn-sm" onclick="advancePostaIfReady()" id="btnNextPosta" disabled>Zarpar a Siguiente Posta del Rio</button>
+        </div>
+        <div class="log-list" id="logContainer"></div>
+      </div>
+    </div>
+
+    <!-- TAB SHOP -->
+    <div id="viewShop" class="section-box hidden">
+      <div class="section-header">
+        <span class="section-title">Champa-Tienda del Rio Atrato (Compra Reliquias de Chirimia y Aderezos con tus Patacones)</span>
+      </div>
+      <div class="relics-row" id="shopContainer" style="margin-bottom:14px;"></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="buyPack('sal')">Comprar Tarro de Sal de Monte (+2 Sal) - $3 Patacones</button>
+        <button class="btn btn-primary" onclick="buyPack('miel')">Comprar Botella de Miel de Abejas (+2 Miel) - $4 Patacones</button>
+        <button class="btn btn-accent" onclick="buyPack('cool')">Rama de Poleo de Azotea (Baja -35% Candela) - $3 Patacones</button>
+      </div>
+    </div>
+
+    <!-- TAB SPEC -->
+    <div id="viewSpec" class="section-box hidden">
+      <div class="section-header">
+        <span class="section-title">Arquitectura Matematica de Sinergias del Choco Fluvial</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Ingrediente / Reliquia</th>
+            <th>Familia Fluvial</th>
+            <th>Efecto Base (Sustancia / Candela)</th>
+            <th>Sinergia Intrinseca Chocoana</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Chontaduro de Boraudo</td>
+            <td>Sustancia + Aderezo</td>
+            <td>+35 Sustancia, x1.0 Candela</td>
+            <td>Admite Sal (+25 Sustancia) y Miel (x1.5 Candela). Con Paila de Cobre gana +15 Sustancia permanente para toda la run.</td>
+          </tr>
+          <tr>
+            <td>Popocho del San Juan</td>
+            <td>Transformacion por Fogon</td>
+            <td>Verde: +30 | Pinton: +45/+4 | Maduro: +50 y x2.0</td>
+            <td>Cada vez que usas "Dejar al Fogon", los Popochos en tu mano avanzan de Verde (Patacon) a Pinton y a Maduro (Tajada que absorbe Miel).</td>
+          </tr>
+          <tr>
+            <td>Borojo Maduro de Selva</td>
+            <td>Motor de Retriggers</td>
+            <td>+20 Sustancia, +3 Candela</td>
+            <td>Dispara Retrigger en los ingredientes a su izquierda y derecha en la Paila. Con Clarinete de Chirimia suma +4 Candela por cada retrigger.</td>
+          </tr>
+          <tr>
+            <td>Viche Puro / Arrechon con Pipilongo</td>
+            <td>Botella Curada (Riesgo)</td>
+            <td>Viche: x2.0 Candela | Arrechon: x3.0 Candela</td>
+            <td>Multiplica toda la Paila al final, pero sube +35% o +50% el Medidor de Candela. Si pasa de 100%, rebosa la olla (-50% pts) salvo que enfries con Bijao o Azotea.</td>
+          </tr>
+          <tr>
+            <td>Hoja de Bijao y Queso Costeño</td>
+            <td>Proteccion Climatica</td>
+            <td>+30 Sustancia, -25% Candela</td>
+            <td>En postas de Aguacero Chocoano evita que la lluvia lave la Sal de los Chontaduros y suma +25 Sustancia por cada Chontaduro en la paila.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const POSTAS = [
+      {
+        id: 1,
+        name: "1. Embarcadero de Negua (Rio Negua - Atrato)",
+        target: 450,
+        rainPenalty: false,
+        rule: "Clima: Brisa mansa del rio (Sin penalizacion climatica)",
+        reward: 8
+      },
+      {
+        id: 2,
+        name: "2. Boraudo Bajo Aguacero (Cuenca del Atrato)",
+        target: 1200,
+        rainPenalty: true,
+        rule: "Aguacero de Quibdo: La lluvia lava la Sal de los Chontaduros salvo que tengan Miel o haya Hoja de Bijao en la Paila",
+        reward: 12
+      },
+      {
+        id: 3,
+        name: "3. Malecon de Quibdo - Fiesta de San Pacho (Jefe Fluvial)",
+        target: 3500,
+        rainPenalty: true,
+        rule: "Jefe de San Pacho: Aguacero activo + las Botellas Curadas suben +10% extra de Candela, pero la Chirimia da +3 Candela base",
+        reward: 20
+      }
+    ];
+
+    const ALL_RELICS = [
+      {
+        id: "clarinete",
+        name: "Clarinete de Chirimia",
+        cost: 6,
+        desc: "Cada vez que un Borojo activa Retrigger en la Paila, suma +4 Candela al marcador."
+      },
+      {
+        id: "paila_cobre",
+        name: "Paila de Cobre Curada",
+        cost: 7,
+        desc: "Cada Chontaduro servido con Sal y Miel gana +15 Sustancia permanente para toda la run."
+      },
+      {
+        id: "azotea_canoa",
+        name: "Azotea en Canoa (Poleo y Cimarron)",
+        cost: 6,
+        desc: "Enfria -20% el Medidor de Candela en cada mano y otorga x1.5 Candela si sirves alguna Botella Curada."
+      },
+      {
+        id: "bombardino",
+        name: "Bombardino de San Pacho",
+        cost: 8,
+        desc: "Los Popochos Maduros (Tajadas) disparan x2.0 Candela adicional al puntuar."
+      },
+      {
+        id: "totumo",
+        name: "Cuchara de Totumo",
+        cost: 5,
+        desc: "Otorga +30 Sustancia adicional por cada aderezo (Sal o Miel) presente en la Paila."
+      }
+    ];
+
+    let state = {
+      postaIdx: 0,
+      score: 0,
+      handsLeft: 4,
+      discardsLeft: 3,
+      patacones: 12,
+      salCount: 3,
+      mielCount: 2,
+      candelaHeat: 15,
+      permChontaBonus: 0,
+      audioOn: true,
+      activeRelics: ["clarinete", "paila_cobre"],
+      hand: [],
+      logs: [
+        "Bienvenido a La Paila del Atrato. Selecciona hasta 5 ingredientes del canasto, ponles Sal y Miel a los Chontaduros y pulsa SERVIR PAILA."
+      ]
+    };
+
+    let uidCounter = 1;
+    function nextUid() { return "card_" + (uidCounter++); }
+
+    function createCard(templateKey, popochoStage = 0) {
+      if (templateKey === "chontaduro") {
+        return {
+          uid: nextUid(),
+          key: "chontaduro",
+          name: "Chontaduro de Boraudo",
+          family: "Sustancia + Aderezo",
+          baseSub: 35,
+          baseMultAdd: 0,
+          baseMultX: 1,
+          heat: 0,
+          hasSal: false,
+          hasMiel: false,
+          popochoStage: 0,
+          selected: false
+        };
+      }
+      if (templateKey === "popocho") {
+        return {
+          uid: nextUid(),
+          key: "popocho",
+          name: popochoStage === 0 ? "Popocho Verde (Patacon)" : popochoStage === 1 ? "Popocho Pinton" : "Popocho Maduro (Tajada)",
+          family: "Fogon (Etapa " + (popochoStage + 1) + "/3)",
+          baseSub: popochoStage === 0 ? 30 : popochoStage === 1 ? 45 : 55,
+          baseMultAdd: popochoStage === 1 ? 4 : 0,
+          baseMultX: popochoStage === 2 ? 2.0 : 1,
+          heat: 5,
+          hasSal: false,
+          hasMiel: false,
+          popochoStage: popochoStage,
+          selected: false
+        };
+      }
+      if (templateKey === "borojo") {
+        return {
+          uid: nextUid(),
+          key: "borojo",
+          name: "Borojo del San Juan",
+          family: "Motor Retrigger",
+          baseSub: 20,
+          baseMultAdd: 3,
+          baseMultX: 1,
+          heat: 0,
+          hasSal: false,
+          hasMiel: false,
+          popochoStage: 0,
+          selected: false
+        };
+      }
+      if (templateKey === "viche") {
+        return {
+          uid: nextUid(),
+          key: "viche",
+          name: "Botella de Viche Curado",
+          family: "Botella Curada",
+          baseSub: 15,
+          baseMultAdd: 2,
+          baseMultX: 2.0,
+          heat: 30,
+          hasSal: false,
+          hasMiel: false,
+          popochoStage: 0,
+          selected: false
+        };
+      }
+      if (templateKey === "arrechon") {
+        return {
+          uid: nextUid(),
+          key: "arrechon",
+          name: "Arrechon con Pipilongo",
+          family: "Botella Curada",
+          baseSub: 25,
+          baseMultAdd: 4,
+          baseMultX: 3.0,
+          heat: 45,
+          hasSal: false,
+          hasMiel: false,
+          popochoStage: 0,
+          selected: false
+        };
+      }
+      return {
+        uid: nextUid(),
+        key: "bijao",
+        name: "Queso en Hoja de Bijao",
+        family: "Proteccion / Azotea",
+        baseSub: 30,
+        baseMultAdd: 2,
+        baseMultX: 1,
+        heat: -25,
+        hasSal: false,
+        hasMiel: false,
+        popochoStage: 0,
+        selected: false
+      };
+    }
+
+    function dealInitialHand() {
+      state.hand = [
+        createCard("chontaduro"),
+        createCard("borojo"),
+        createCard("chontaduro"),
+        createCard("popocho", 0),
+        createCard("popocho", 2),
+        createCard("viche"),
+        createCard("arrechon"),
+        createCard("bijao")
+      ];
+    }
+
+    function drawUpToEight() {
+      const pool = ["chontaduro", "chontaduro", "popocho", "borojo", "viche", "arrechon", "bijao", "chontaduro"];
+      while (state.hand.length < 8) {
+        const pick = pool[Math.floor(Math.random() * pool.length)];
+        state.hand.push(createCard(pick, 0));
+      }
+    }
+
+    function playChirimiaNote(stepIndex, isMult = false) {
+      if (!state.audioOn) return;
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioCtx();
+        const scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25, 783.99];
+        const freq = scale[stepIndex % scale.length] * (isMult ? 1.25 : 1);
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = isMult ? "sawtooth" : "triangle";
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.14, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.22);
+      } catch (e) {}
+    }
+
+    function toggleAudio() {
+      state.audioOn = !state.audioOn;
+      document.getElementById("audioToggleBtn").textContent = "Audio Chirimia: " + (state.audioOn ? "ON" : "OFF");
+    }
+
+    function switchTab(tab) {
+      document.getElementById("viewPlay").classList.toggle("hidden", tab !== "play");
+      document.getElementById("viewShop").classList.toggle("hidden", tab !== "shop");
+      document.getElementById("viewSpec").classList.toggle("hidden", tab !== "spec");
+      document.getElementById("tabPlayBtn").classList.toggle("btn-primary", tab === "play");
+      document.getElementById("tabShopBtn").classList.toggle("btn-primary", tab === "shop");
+      document.getElementById("tabSpecBtn").classList.toggle("btn-primary", tab === "spec");
+    }
+
+    function getSelectedCards() {
+      return state.hand.filter(c => c.selected);
+    }
+
+    function toggleSelectCard(uid) {
+      const card = state.hand.find(c => c.uid === uid);
+      if (!card) return;
+      if (!card.selected && getSelectedCards().length >= 5) {
+        state.logs.unshift("La Paila tiene maximo 5 espacios. Quita un ingrediente antes de agregar otro.");
+        render();
+        return;
+      }
+      card.selected = !card.selected;
+      playChirimiaNote(getSelectedCards().length, false);
+      render();
+    }
+
+    function moveInPaila(uid, dir) {
+      const idx = state.hand.findIndex(c => c.uid === uid);
+      if (idx === -1) return;
+      const selectedIndices = state.hand.map((c, i) => c.selected ? i : -1).filter(i => i !== -1);
+      const posInSel = selectedIndices.indexOf(idx);
+      const targetPos = posInSel + dir;
+      if (targetPos < 0 || targetPos >= selectedIndices.length) return;
+      const otherIdx = selectedIndices[targetPos];
+      const temp = state.hand[idx];
+      state.hand[idx] = state.hand[otherIdx];
+      state.hand[otherIdx] = temp;
+      render();
+    }
+
+    function applyAderezo(uid, type) {
+      const card = state.hand.find(c => c.uid === uid);
+      if (!card || card.key !== "chontaduro") return;
+      if (type === "sal" && !card.hasSal && state.salCount > 0) {
+        card.hasSal = true;
+        state.salCount--;
+        state.logs.unshift("Pusiste Sal de Monte al Chontaduro (+25 Sustancia).");
+        playChirimiaNote(3, false);
+      } else if (type === "miel" && !card.hasMiel && state.mielCount > 0) {
+        card.hasMiel = true;
+        state.mielCount--;
+        state.logs.unshift("Bañaste el Chontaduro con Miel de Abejas (x1.5 Candela y sella la Sal contra la lluvia).");
+        playChirimiaNote(5, true);
+      }
+      render();
+    }
+
+    function evaluatePailaPreview(selected) {
+      const posta = POSTAS[state.postaIdx];
+      let sub = 0;
+      let mult = posta.id === 3 ? 4.0 : 1.0;
+      let heatDelta = state.activeRelics.includes("azotea_canoa") ? -20 : 0;
+      const hasBijao = selected.some(c => c.key === "bijao");
+      const chontaCount = selected.filter(c => c.key === "chontaduro").length;
+      let hasBottle = false;
+      const steps = [];
+
+      // Count how many times each slot triggers (1 + adjacent Borojo count)
+      const triggers = selected.map((_, idx) => {
+        let t = 1;
+        if (idx > 0 && selected[idx - 1].key === "borojo") t++;
+        if (idx < selected.length - 1 && selected[idx + 1].key === "borojo") t++;
+        return t;
+      });
+
+      selected.forEach((c, idx) => {
+        const count = triggers[idx];
+        heatDelta += c.heat + (posta.id === 3 && (c.key === "viche" || c.key === "arrechon") ? 10 : 0);
+        if (c.key === "viche" || c.key === "arrechon") hasBottle = true;
+
+        for (let rep = 1; rep <= count; rep++) {
+          const isRetrigger = rep > 1;
+          if (c.key === "chontaduro") {
+            let addS = c.baseSub + state.permChontaBonus;
+            if (c.hasSal) {
+              if (posta.rainPenalty && !c.hasMiel && !hasBijao) {
+                steps.push("Aguacero en " + posta.name.split(" ")[1] + ": lavo la Sal del Chontaduro (faltaba Miel u Hoja de Bijao).");
+              } else {
+                addS += 25;
+                if (state.activeRelics.includes("totumo")) addS += 30;
+              }
+            }
+            sub += addS;
+            if (c.hasMiel) {
+              if (state.activeRelics.includes("totumo")) sub += 30;
+              mult = +(mult * 1.5).toFixed(2);
+            }
+            steps.push((isRetrigger ? "[RETRIGGER Borojo] " : "") + c.name + ": +" + addS + " Sustancia" + (c.hasMiel ? " y x1.5 Candela" : "") + " -> (" + sub + " x " + mult + ")");
+          } else if (c.key === "popocho") {
+            let addS = c.baseSub;
+            if (c.popochoStage === 0 && idx > 0) {
+              addS += selected[idx - 1].baseSub;
+            }
+            sub += addS;
+            mult = +(mult + c.baseMultAdd).toFixed(2);
+            if (c.popochoStage === 2) {
+              const mielCountInPaila = selected.filter(x => x.hasMiel).length;
+              const xFactor = (state.activeRelics.includes("bombardino") ? 2.0 : 1.5) + (mielCountInPaila * 0.25);
+              mult = +(mult * xFactor).toFixed(2);
+              steps.push((isRetrigger ? "[RETRIGGER Borojo] " : "") + "Popocho Maduro (Tajada): +" + addS + " Sustancia y x" + xFactor.toFixed(2) + " Candela -> (" + sub + " x " + mult + ")");
+            } else {
+              steps.push((isRetrigger ? "[RETRIGGER Borojo] " : "") + c.name + ": +" + addS + " Sustancia, +" + c.baseMultAdd + " Candela -> (" + sub + " x " + mult + ")");
+            }
+          } else if (c.key === "borojo") {
+            sub += c.baseSub;
+            mult = +(mult + c.baseMultAdd).toFixed(2);
+            if (state.activeRelics.includes("clarinete")) {
+              mult = +(mult + 4).toFixed(2);
+              steps.push("Borojo del San Juan + Clarinete de Chirimia: +" + c.baseSub + " Sustancia y +7 Candela -> (" + sub + " x " + mult + ")");
+            } else {
+              steps.push("Borojo del San Juan: +" + c.baseSub + " Sustancia y +" + c.baseMultAdd + " Candela -> (" + sub + " x " + mult + ")");
+            }
+          } else if (c.key === "viche" || c.key === "arrechon") {
+            sub += c.baseSub;
+            mult = +((mult + c.baseMultAdd) * c.baseMultX).toFixed(2);
+            steps.push((isRetrigger ? "[RETRIGGER Borojo] " : "") + c.name + ": +" + c.baseSub + " Sustancia y x" + c.baseMultX + " Candela -> (" + sub + " x " + mult + ")");
+          } else if (c.key === "bijao") {
+            const bonus = c.baseSub + (chontaCount * 25);
+            sub += bonus;
+            mult = +(mult + c.baseMultAdd).toFixed(2);
+            steps.push((isRetrigger ? "[RETRIGGER Borojo] " : "") + "Queso en Hoja de Bijao: protege de la lluvia y suma +" + bonus + " Sustancia -> (" + sub + " x " + mult + ")");
+          }
+        }
+      });
+
+      if (hasBottle && state.activeRelics.includes("azotea_canoa")) {
+        mult = +(mult * 1.5).toFixed(2);
+        steps.push("Reliquia Azotea en Canoa: x1.5 Candela por servir Botella Curada -> Mult final " + mult);
+      }
+
+      const finalHeat = Math.max(0, Math.min(120, state.candelaHeat + heatDelta));
+      let total = Math.round(sub * mult);
+      if (finalHeat > 100) {
+        total = Math.round(total * 0.5);
+        steps.push("¡REBOTE DE PAILA! La Candela supero el 100% (" + finalHeat + "%): se reboso la olla y perdiste 50% del puntaje de esta mano.");
+      }
+      return { sub, mult, total, finalHeat, steps };
+    }
+
+    function servePaila() {
+      const selected = getSelectedCards();
+      if (selected.length === 0 || state.handsLeft <= 0) return;
+
+      const res = evaluatePailaPreview(selected);
+      state.handsLeft--;
+      state.score += res.total;
+      state.candelaHeat = res.finalHeat > 100 ? 45 : res.finalHeat;
+
+      // Permanent scaling check
+      let permGained = 0;
+      if (state.activeRelics.includes("paila_cobre")) {
+        selected.forEach(c => {
+          if (c.key === "chontaduro" && c.hasSal && c.hasMiel) {
+            state.permChontaBonus += 15;
+            permGained += 15;
+          }
+        });
+      }
+
+      res.steps.forEach((st, idx) => {
+        setTimeout(() => playChirimiaNote(idx + 2, st.includes("x")), idx * 90);
+      });
+
+      state.logs = [
+        "¡PAILA SERVIDA! +" + res.total + " pts (" + res.sub + " Sustancia x " + res.mult + " Candela)." + (permGained > 0 ? " Paila de Cobre otorgo +" + permGained + " Sustancia permanente a tus Chontaduros." : ""),
+        ...res.steps
+      ];
+
+      // Remove played cards and draw back up to 8
+      state.hand = state.hand.filter(c => !c.selected);
+      drawUpToEight();
+      render();
+    }
+
+    function fogonDiscard() {
+      const selected = getSelectedCards();
+      if (selected.length === 0 || state.discardsLeft <= 0) return;
+      state.discardsLeft--;
+      state.hand = state.hand.filter(c => !c.selected);
+
+      // Ripen remaining Popochos in hand
+      let ripened = 0;
+      state.hand.forEach(c => {
+        if (c.key === "popocho" && c.popochoStage < 2) {
+          c.popochoStage++;
+          c.name = c.popochoStage === 1 ? "Popocho Pinton" : "Popocho Maduro (Tajada)";
+          c.family = "Fogon (Etapa " + (c.popochoStage + 1) + "/3)";
+          c.baseSub = c.popochoStage === 1 ? 45 : 55;
+          c.baseMultAdd = c.popochoStage === 1 ? 4 : 0;
+          c.baseMultX = c.popochoStage === 2 ? 2.0 : 1;
+          ripened++;
+        }
+      });
+
+      drawUpToEight();
+      playChirimiaNote(1, false);
+      state.logs.unshift("Dejaste la olla al Fogon: descartaste " + selected.length + " ingredientes y maduraste " + ripened + " Popocho(s) en tu canasto.");
+      render();
+    }
+
+    function loadWinningComboDemo() {
+      state.salCount = Math.max(state.salCount, 2);
+      state.mielCount = Math.max(state.mielCount, 2);
+      const ch1 = createCard("chontaduro");
+      ch1.hasSal = true; ch1.hasMiel = true; ch1.selected = true;
+      const bo = createCard("borojo");
+      bo.selected = true;
+      const ch2 = createCard("chontaduro");
+      ch2.hasSal = true; ch2.hasMiel = true; ch2.selected = true;
+      const po = createCard("popocho", 2);
+      po.selected = true;
+      const ar = createCard("arrechon");
+      ar.selected = true;
+
+      state.hand = [ch1, bo, ch2, po, ar, createCard("bijao"), createCard("viche"), createCard("popocho", 0)];
+      state.logs.unshift("Combo Rompe-Paila cargado: 2 Chontaduros con Sal y Miel flanqueando un Borojo del San Juan (Retrigger doble) + Popocho Maduro + Arrechon con Pipilongo. ¡Pulsa SERVIR PAILA!");
+      playChirimiaNote(6, true);
+      render();
+    }
+
+    function advancePostaIfReady() {
+      const posta = POSTAS[state.postaIdx];
+      if (state.score < posta.target) return;
+      state.patacones += posta.reward;
+      state.salCount += 2;
+      state.mielCount += 1;
+      if (state.postaIdx < POSTAS.length - 1) {
+        state.postaIdx++;
+        state.score = 0;
+        state.handsLeft = 4;
+        state.discardsLeft = 3;
+        state.candelaHeat = 15;
+        state.logs.unshift("¡Superaste la posta! Ganaste $" + posta.reward + " Patacones, +2 Sal y +1 Miel. Zarpaste en panga hacia: " + POSTAS[state.postaIdx].name);
+      } else {
+        state.logs.unshift("¡VICTORIA EN EL MALECON DE QUIBDO! Coronaste las 3 postas fluviales del Atrato en plenas Fiestas de San Pacho.");
+      }
+      render();
+    }
+
+    function buyRelic(id) {
+      const relic = ALL_RELICS.find(r => r.id === id);
+      if (!relic || state.activeRelics.includes(id)) return;
+      if (state.patacones < relic.cost || state.activeRelics.length >= 5) return;
+      state.patacones -= relic.cost;
+      state.activeRelics.push(id);
+      state.logs.unshift("Compraste en la Champa-Tienda: " + relic.name + ".");
+      playChirimiaNote(7, true);
+      render();
+    }
+
+    function buyPack(kind) {
+      if (kind === "sal" && state.patacones >= 3) {
+        state.patacones -= 3;
+        state.salCount += 2;
+        state.logs.unshift("Compraste +2 de Sal de Monte en la Champa-Tienda.");
+      } else if (kind === "miel" && state.patacones >= 4) {
+        state.patacones -= 4;
+        state.mielCount += 2;
+        state.logs.unshift("Compraste +2 de Miel de Abejas en la Champa-Tienda.");
+      } else if (kind === "cool" && state.patacones >= 3) {
+        state.patacones -= 3;
+        state.candelaHeat = Math.max(0, state.candelaHeat - 35);
+        state.logs.unshift("Refrescaste la Paila con Poleo de la Canoa de Azotea (-35% Candela).");
+      }
+      render();
+    }
+
+    function resetRun() {
+      state.postaIdx = 0;
+      state.score = 0;
+      state.handsLeft = 4;
+      state.discardsLeft = 3;
+      state.patacones = 12;
+      state.salCount = 3;
+      state.mielCount = 2;
+      state.candelaHeat = 15;
+      state.permChontaBonus = 0;
+      state.activeRelics = ["clarinete", "paila_cobre"];
+      dealInitialHand();
+      state.logs = ["Nueva travesia iniciada en el Embarcadero de Negua. ¡A cocinar esa Paila!"];
+      render();
+    }
+
+    function render() {
+      const posta = POSTAS[state.postaIdx];
+      document.getElementById("hudPostaName").textContent = posta.name;
+      document.getElementById("hudPostaRule").textContent = posta.rule;
+      document.getElementById("hudScoreProgress").textContent = state.score.toLocaleString() + " / " + posta.target.toLocaleString() + " pts";
+      document.getElementById("hudHandsLeft").textContent = "Pailas por servir: " + state.handsLeft + " | Fogones/Descartes: " + state.discardsLeft;
+      document.getElementById("hudResources").textContent = "Patacones: $" + state.patacones + " | Sal: " + state.salCount + " | Miel: " + state.mielCount;
+      document.getElementById("hudPermanentBonus").textContent = "Bono Permanente Chontaduro: +" + state.permChontaBonus + " Sustancia";
+
+      const selected = getSelectedCards();
+      const preview = evaluatePailaPreview(selected);
+      document.getElementById("liveChips").textContent = preview.sub + " Sustancia";
+      document.getElementById("liveMult").textContent = preview.mult + " Candela";
+      document.getElementById("liveTotal").textContent = preview.total.toLocaleString() + " Pts";
+      document.getElementById("candelaPctText").textContent = preview.finalHeat + "% / 100%";
+      document.getElementById("candelaBar").style.width = Math.min(100, preview.finalHeat) + "%";
+      document.getElementById("pailaTitle").textContent = "La Paila de Cobre (" + selected.length + " / 5 Ingredientes en Olla)";
+
+      document.getElementById("btnServe").disabled = selected.length === 0 || state.handsLeft <= 0;
+      document.getElementById("btnFogon").disabled = selected.length === 0 || state.discardsLeft <= 0;
+      document.getElementById("btnNextPosta").disabled = state.score < posta.target;
+
+      // Render Relics
+      const relicsEl = document.getElementById("relicsContainer");
+      relicsEl.innerHTML = "";
+      state.activeRelics.forEach(rId => {
+        const r = ALL_RELICS.find(x => x.id === rId);
+        if (!r) return;
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <div class="card-top">
+            <span class="card-name">${r.name}</span>
+            <span class="card-family">Reliquia Activa</span>
+          </div>
+          <div class="card-desc">${r.desc}</div>
+        `;
+        relicsEl.appendChild(div);
+      });
+
+      // Render Paila Selected
+      const pailaEl = document.getElementById("pailaContainer");
+      pailaEl.innerHTML = "";
+      if (selected.length === 0) {
+        pailaEl.innerHTML = `<div class="card"><div class="card-desc">Haz click en hasta 5 ingredientes del Canasto de abajo para echarlos a la Paila. El orden de izquierda a derecha define como se multiplican.</div></div>`;
+      } else {
+        selected.forEach((c, idx) => {
+          const div = document.createElement("div");
+          div.className = "card selected";
+          div.innerHTML = `
+            <div class="card-top">
+              <span class="card-name">${idx + 1}. ${c.name}</span>
+              <span class="card-family">${c.family}</span>
+            </div>
+            <div class="card-stats">
+              <span class="stat-pill stat-sub">+${c.baseSub + (c.key === 'chontaduro' ? state.permChontaBonus : 0) + (c.hasSal ? 25 : 0)} Sust</span>
+              <span class="stat-pill stat-mult">${c.hasMiel ? 'x1.5 Miel' : (c.baseMultX > 1 ? 'x' + c.baseMultX + ' Candela' : '+' + c.baseMultAdd + ' Candela')}</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn btn-sm" onclick="moveInPaila('${c.uid}', -1)">Izq</button>
+              <button class="btn btn-sm" onclick="moveInPaila('${c.uid}', 1)">Der</button>
+              <button class="btn btn-sm btn-danger" onclick="toggleSelectCard('${c.uid}')">Sacar</button>
+            </div>
+          `;
+          pailaEl.appendChild(div);
+        });
+      }
+
+      // Render Hand
+      const handEl = document.getElementById("handContainer");
+      handEl.innerHTML = "";
+      state.hand.forEach(c => {
+        const div = document.createElement("div");
+        div.className = "card" + (c.selected ? " selected" : "");
+        let aderezoHtml = "";
+        if (c.key === "chontaduro") {
+          aderezoHtml = `
+            <button class="btn btn-sm" ${c.hasSal || state.salCount <= 0 ? 'disabled' : ''} onclick="applyAderezo('${c.uid}', 'sal')">${c.hasSal ? 'Con Sal (+25)' : 'Poner Sal (' + state.salCount + ')'}</button>
+            <button class="btn btn-sm" ${c.hasMiel || state.mielCount <= 0 ? 'disabled' : ''} onclick="applyAderezo('${c.uid}', 'miel')">${c.hasMiel ? 'Con Miel (x1.5)' : 'Poner Miel (' + state.mielCount + ')'}</button>
+          `;
+        }
+        div.innerHTML = `
+          <div class="card-top">
+            <span class="card-name">${c.name}</span>
+            <span class="card-family">${c.family}</span>
+          </div>
+          <div class="card-stats">
+            <span class="stat-pill stat-sub">+${c.baseSub + (c.key === 'chontaduro' ? state.permChontaBonus : 0)} Sust</span>
+            <span class="stat-pill stat-mult">${c.baseMultX > 1 ? 'x' + c.baseMultX + ' Candela' : '+' + c.baseMultAdd + ' Candela'}</span>
+            ${c.heat !== 0 ? `<span class="stat-pill stat-heat">${c.heat > 0 ? '+' + c.heat : c.heat}% Candela</span>` : ''}
+          </div>
+          <div class="card-actions">
+            <button class="btn btn-sm ${c.selected ? 'btn-danger' : 'btn-primary'}" onclick="toggleSelectCard('${c.uid}')">${c.selected ? 'En la Paila (Quitar)' : 'Echar a la Paila'}</button>
+            ${aderezoHtml}
+          </div>
+        `;
+        handEl.appendChild(div);
+      });
+
+      // Render Shop
+      const shopEl = document.getElementById("shopContainer");
+      shopEl.innerHTML = "";
+      ALL_RELICS.forEach(r => {
+        const owned = state.activeRelics.includes(r.id);
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <div class="card-top">
+            <span class="card-name">${r.name}</span>
+            <span class="card-family">$${r.cost} Patacones</span>
+          </div>
+          <div class="card-desc">${r.desc}</div>
+          <div class="card-actions">
+            <button class="btn btn-sm btn-primary" ${owned || state.patacones < r.cost ? 'disabled' : ''} onclick="buyRelic('${r.id}')">${owned ? 'En tu Estante' : 'Comprar Reliquia'}</button>
+          </div>
+        `;
+        shopEl.appendChild(div);
+      });
+
+      // Render Logs
+      const logEl = document.getElementById("logContainer");
+      logEl.innerHTML = state.logs.map(l => `<div class="log-item">${l}</div>`).join("");
+    }
+
+    dealInitialHand();
+    render();
+  </script>
+</body>
+</html>
