@@ -1,8 +1,8 @@
-# PSX Low-Poly Material for borojo_selva
-newmtl psx_borojo_selva
+# Material para borojo_selva
+newmtl mat_borojo_selva
 Ka 1.000 1.000 1.000
 Kd 1.000 1.000 1.000
-Ks 0.000 0.000 0.000
+Ks 0.150 0.150 0.150
 d 1.0
-illum 1
-map_Kd ../textures/borojo_selva_64.png
+illum 2
+map_Kd ../textures/tex_borojo_skin.png

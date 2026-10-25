@@ -1,18 +1,16 @@
-# La Paila del Atrato
+# La Paila del Atrato: Candela en Quibdo 3D
 
-Roguelike chocoano de sinergias culinarias y construccion de motor (`Sustancia x Candela`) en estetica 3D Low-Poly PSX, inspirado en los rios Atrato y San Juan (Choco, Colombia) para PC en Steam.
+Survivor / Action-Roguelike 3D chocoano en tercera persona ambientado en las 5 zonas de Quibdo (Malecon del Rio Atrato, Plaza de la Catedral de San Francisco de Asis, Alameda Reyes, Sendero del Tutunendo y Esteros del Sur), con proyecto nativo **Godot Engine 4.3** (`godot-project/`) y version web interactiva con **Rasterizador 3D Z-Buffer Per-Pixel, Perspective-Correct UV Mapping y Gouraud Smooth Shading** (`index.html`).
 
-## Concepto y Loop Jugable
-Sirve manos de hasta 5 ingredientes tipicos del Choco fluvial en tu paila de cobre mientras tus **Reliquias de Sabedora y Chirimia** disparan combos de izquierda a derecha al ritmo de clarinete, bombardino, tambora y marimba de chonta:
-- **Chontaduro de Boraudo:** Ranuras propias de aderezo para **Sal de Monte** (`+Sustancia`) y **Miel de Abejas** (`x1.5 Candela` + escalado permanente por toda la partida).
-- **Popocho del San Juan:** Madura al calor del fogon entre rondas (**Verde en Patacon** duplica la base del vecino izquierdo, **Pinton** equilibra y **Maduro en Tajada** absorbe la miel como `x2.0 Candela`).
-- **Borojo del San Juan:** Motor de *retriggers* que reactiva los ingredientes vecinos.
-- **Botellas Curadas (Viche Curado y Arrechon con Pipilongo):** Multiplicadores explosivos (`x2.0` y `x3.0 Candela`) que suben el medidor termico de la paila.
-- **Queso en Hoja de Bijao:** Enfriamiento de paila y escudo contra el modificador climatico *Aguacero de Quibdo*.
+## Caracteristicas Principales
+- **Motor 3D Z-Buffer Per-Pixel + Gouraud Smooth Shading:** Renderizado organico sin costuras ni distorsion afin, con iluminacion suave por vertice y brillo especular.
+- **Elenco de Personajes Chocoanos con Silueta Propia:** Juega y encuentra a **Janfry** (camiseta deportiva, corte afro con linea, sin sombrero), **Dona Cruz la Chontadurera** (turbante afro colorido y batea tallada llena de chontaduros), **Tostao Flow Quibdoseno** (camisa abierta del Pacifico, gafas doradas, gorra hacia atras y microfono), **Mototaxista de la Yesquita** (con su moto **Yamaha DT / BWS** modelada en 3D), **Jonyer ("Obvio Bobis")**, **El Rey del Bunde de San Pacho** (capa festiva y tambora al pecho) y el jefe **El Mohan del Baudo**.
+- **Arquitectura Emblematica de Quibdo:** Catedral de San Francisco de Asis con sus dos torres campanario, relojes circulares, arcos profundos, roseton colorido y cupula central; casas de madera de Alameda Reyes, Chiva rumbera, taxis y champas en el Rio Atrato.
+- **Proyecto Nativo Godot Engine 4.3 (`godot-project/`):** Escena principal `scenes/main.tscn`, controlador `scripts/main.gd`, shader `shaders/psx_retro_lit.gdshader`, modelos `.glb`/`.obj` esculpidos en `assets/models/` y texturas UV pintadas en `assets/textures/`.
 
 ## Estructura del Repositorio
-- `index.html`: Prototipo interactivo jugable completo (motor `Sustancia x Candela`, postas del rio Atrato, Champa-Tienda y sintetizador Web Audio API).
-- `SPEC-CURSOR-ARGON.md`: Arquitectura del pipeline de 5 fases, esquema JSON de datos y prompts de implementacion para Cursor y Gemini Argon.
-- `assets-psx/textures/`: las 8 texturas `64x64` en 15-bit RGB555 con dithering Bayer 4x4 exclusivas de *La Paila del Atrato*.
-- `assets-psx/models/`: Modelos 3D Low-Poly (`.obj` y `.mtl`) de bajo conteo de poligonos.
-- `assets-psx/shaders/`: Shaders GLSL (Three.js/WebGL) y `.gdshader` (Godot 4) con vertex snapping, iluminacion Gouraud y post-proceso de dithering PSX.
+- `index.html`: Juego 3D completo listo para abrir en cualquier navegador o desde `JUGAR_WINDOWS.bat`.
+- `JUGAR_WINDOWS.bat`: Lanzador directo para Windows.
+- `godot-project/`: Proyecto completo de Godot Engine 4.3 verificado en modo headless.
+- `SPEC-CURSOR-ARGON.md`: Especificacion tecnica de arquitectura 3D, personajes, armas y fisicas.
+- `assets-psx/`: Modelos `.glb`/`.obj` esculpidos y texturas UV `.png`.
