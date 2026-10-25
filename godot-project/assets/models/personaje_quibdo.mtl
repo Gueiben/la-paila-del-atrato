@@ -1,0 +1,8 @@
+# Material para personaje_quibdo
+newmtl mat_personaje_quibdo
+Ka 1.000 1.000 1.000
+Kd 1.000 1.000 1.000
+Ks 0.150 0.150 0.150
+d 1.0
+illum 2
+map_Kd ../textures/tex_personajes_quibdo.png
